@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
@@ -208,6 +209,14 @@ fun HomeLauncherSettingsMenu(
     val selectedTopApp = remember(topApp) { launcherApps.find { it.packageName == topApp } }
     val selectedBottomApp = remember(bottomApp) { launcherApps.find { it.packageName == bottomApp } }
 
+    var hideTopAppFromRecents by remember {
+        mutableStateOf(prefs.getBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, false))
+    }
+    var hideBottomAppFromRecents by remember {
+        mutableStateOf(prefs.getBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, false))
+    }
+    var showHideFromRecentsInfo by remember { mutableStateOf(false) }
+
     var activeGestureConfig by remember { mutableStateOf(GestureConfigStore.getActiveConfig(context)) }
     var presetRefreshTick by remember { mutableStateOf(0) }
     val gestureConfigs = remember(activeGestureConfig.fileName, presetRefreshTick) { GestureConfigStore.listConfigs(context) }
@@ -268,6 +277,27 @@ fun HomeLauncherSettingsMenu(
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    if (showHideFromRecentsInfo) {
+        AlertDialog(
+            onDismissRequest = { showHideFromRecentsInfo = false },
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            title = { Text("Hide from Recents") },
+            text = {
+                Text(
+                    "Keeps this screen's home app out of the task switcher, so your " +
+                        "frontends don't clutter it up.\n\n" +
+                        "• Android still shows an app while it's the one in front. It " +
+                        "disappears once you switch away.\n\n" +
+                        "• Applies when Mjolnir launches the app. If it's already in " +
+                        "Recents, clear it once."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showHideFromRecentsInfo = false }) { Text("Got it") }
+            }
+        )
     }
 
     if (showRenameDialog && dialogTarget != null) {
@@ -489,14 +519,47 @@ fun HomeLauncherSettingsMenu(
                             }
                         }
 
-                        Text(
-                            text = mainTopLabel,
-                            style = MaterialTheme.typography.bodyLarge,
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.constrainAs(labelTop) {
                                 linkTo(start = c3, end = c4)
                                 centerVerticallyTo(cardTop)
                             }
-                        )
+                        ) {
+                            if (mainTopLabel.isNotEmpty()) {
+                                Text(
+                                    text = mainTopLabel,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(Modifier.height(12.dp))
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Hide from Recents",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                IconButton(
+                                    onClick = { showHideFromRecentsInfo = true },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = "About Hide from Recents",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                            Switch(
+                                checked = hideTopAppFromRecents,
+                                onCheckedChange = {
+                                    hideTopAppFromRecents = it
+                                    prefs.edit().putBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, it).apply()
+                                }
+                            )
+                        }
 
                         RadioButton(
                             selected = mainScreen == MainScreen.BOTTOM,
@@ -575,14 +638,47 @@ fun HomeLauncherSettingsMenu(
                             }
                         }
 
-                        Text(
-                            text = mainBottomLabel,
-                            style = MaterialTheme.typography.bodyLarge,
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.constrainAs(labelBottom) {
                                 linkTo(start = c3, end = c4)
                                 centerVerticallyTo(cardBottom)
                             }
-                        )
+                        ) {
+                            if (mainBottomLabel.isNotEmpty()) {
+                                Text(
+                                    text = mainBottomLabel,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(Modifier.height(12.dp))
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Hide from Recents",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textAlign = TextAlign.Center,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                IconButton(
+                                    onClick = { showHideFromRecentsInfo = true },
+                                    modifier = Modifier.size(28.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = "About Hide from Recents",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
+                            }
+                            Switch(
+                                checked = hideBottomAppFromRecents,
+                                onCheckedChange = {
+                                    hideBottomAppFromRecents = it
+                                    prefs.edit().putBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, it).apply()
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -681,14 +777,6 @@ fun HomeLauncherSettingsMenu(
                     mutableStateOf(prefs.getBoolean(KEY_BOTH_AUTO_NOTHING_TO_HOME, true))
                 }
 
-                var hideTopAppFromRecents by remember {
-                    mutableStateOf(prefs.getBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, false))
-                }
-
-                var hideBottomAppFromRecents by remember {
-                    mutableStateOf(prefs.getBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, false))
-                }
-
                 var topBottomLaunchDelayMs by remember {
                     mutableStateOf(
                         prefs.getInt(KEY_TOP_BOTTOM_LAUNCH_DELAY_MS, DEFAULT_TOP_BOTTOM_LAUNCH_DELAY_MS)
@@ -764,54 +852,6 @@ fun HomeLauncherSettingsMenu(
                             onCheckedChange = {
                                 bothAutoNothingToHome = it
                                 prefs.edit().putBoolean(KEY_BOTH_AUTO_NOTHING_TO_HOME, it).apply()
-                            }
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(text = "Hide top app from Recents")
-                            Text(
-                                text = "Keeps the top-screen app out of the task switcher. " +
-                                    "It still appears while it is the app in the foreground.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = hideTopAppFromRecents,
-                            onCheckedChange = {
-                                hideTopAppFromRecents = it
-                                prefs.edit().putBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, it).apply()
-                            }
-                        )
-                    }
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(text = "Hide bottom app from Recents")
-                            Text(
-                                text = "Keeps the bottom-screen app out of the task switcher. " +
-                                    "It still appears while it is the app in the foreground.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Switch(
-                            checked = hideBottomAppFromRecents,
-                            onCheckedChange = {
-                                hideBottomAppFromRecents = it
-                                prefs.edit().putBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, it).apply()
                             }
                         )
                     }
