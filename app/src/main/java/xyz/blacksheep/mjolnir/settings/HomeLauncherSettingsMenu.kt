@@ -78,6 +78,8 @@ import xyz.blacksheep.mjolnir.KEY_CUSTOM_DOUBLE_TAP_DELAY
 import xyz.blacksheep.mjolnir.DEFAULT_TOP_BOTTOM_LAUNCH_DELAY_MS
 import xyz.blacksheep.mjolnir.KEY_AUTO_BOOT_BOTH_HOME
 import xyz.blacksheep.mjolnir.KEY_BOTH_AUTO_NOTHING_TO_HOME
+import xyz.blacksheep.mjolnir.KEY_HIDE_BOTTOM_APP_FROM_RECENTS
+import xyz.blacksheep.mjolnir.KEY_HIDE_TOP_APP_FROM_RECENTS
 import xyz.blacksheep.mjolnir.KEY_ENABLE_FOCUS_LOCK_WORKAROUND
 import xyz.blacksheep.mjolnir.KEY_HOME_INTERCEPTION_ACTIVE
 import xyz.blacksheep.mjolnir.KEY_TOP_BOTTOM_LAUNCH_DELAY_MS
@@ -679,6 +681,14 @@ fun HomeLauncherSettingsMenu(
                     mutableStateOf(prefs.getBoolean(KEY_BOTH_AUTO_NOTHING_TO_HOME, true))
                 }
 
+                var hideTopAppFromRecents by remember {
+                    mutableStateOf(prefs.getBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, false))
+                }
+
+                var hideBottomAppFromRecents by remember {
+                    mutableStateOf(prefs.getBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, false))
+                }
+
                 var topBottomLaunchDelayMs by remember {
                     mutableStateOf(
                         prefs.getInt(KEY_TOP_BOTTOM_LAUNCH_DELAY_MS, DEFAULT_TOP_BOTTOM_LAUNCH_DELAY_MS)
@@ -754,6 +764,54 @@ fun HomeLauncherSettingsMenu(
                             onCheckedChange = {
                                 bothAutoNothingToHome = it
                                 prefs.edit().putBoolean(KEY_BOTH_AUTO_NOTHING_TO_HOME, it).apply()
+                            }
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Hide top app from Recents")
+                            Text(
+                                text = "Keeps the top-screen app out of the task switcher. " +
+                                    "It still appears while it is the app in the foreground.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = hideTopAppFromRecents,
+                            onCheckedChange = {
+                                hideTopAppFromRecents = it
+                                prefs.edit().putBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, it).apply()
+                            }
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = "Hide bottom app from Recents")
+                            Text(
+                                text = "Keeps the bottom-screen app out of the task switcher. " +
+                                    "It still appears while it is the app in the foreground.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = hideBottomAppFromRecents,
+                            onCheckedChange = {
+                                hideBottomAppFromRecents = it
+                                prefs.edit().putBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, it).apply()
                             }
                         )
                     }

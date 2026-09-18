@@ -19,6 +19,8 @@ import xyz.blacksheep.mjolnir.HomeKeyInterceptorService
 import xyz.blacksheep.mjolnir.DEFAULT_TOP_BOTTOM_LAUNCH_DELAY_MS
 import xyz.blacksheep.mjolnir.KEY_BOTTOM_APP
 import xyz.blacksheep.mjolnir.KEY_BOTH_AUTO_NOTHING_TO_HOME
+import xyz.blacksheep.mjolnir.KEY_HIDE_BOTTOM_APP_FROM_RECENTS
+import xyz.blacksheep.mjolnir.KEY_HIDE_TOP_APP_FROM_RECENTS
 import xyz.blacksheep.mjolnir.KEY_MAIN_SCREEN
 import xyz.blacksheep.mjolnir.KEY_SHOW_ALL_APPS
 import xyz.blacksheep.mjolnir.KEY_TOP_APP
@@ -212,11 +214,21 @@ class HomeActionLauncher(private val context: Context) {
         return true
     }
 
-    private fun launchOnDisplay(isTop: Boolean, intent: Intent): Boolean {
+    /**
+     * Whether the app configured for the given slot should be kept out of the
+     * Recents / task switcher list. Opt-in per slot; defaults to `false` so
+     * existing behaviour is unchanged.
+     */
+    private fun hideFromRecents(isTop: Boolean): Boolean {
+        val key = if (isTop) KEY_HIDE_TOP_APP_FROM_RECENTS else KEY_HIDE_BOTTOM_APP_FROM_RECENTS
+        return prefs.getBoolean(key, false)
+    }
+
+    private fun launchOnDisplay(isTop: Boolean, intent: Intent, hideFromRecents: Boolean = false): Boolean {
         return if (isTop) {
-            DualScreenLauncher.launchOnTop(context, intent)
+            DualScreenLauncher.launchOnTop(context, intent, hideFromRecents)
         } else {
-            DualScreenLauncher.launchOnBottom(context, intent)
+            DualScreenLauncher.launchOnBottom(context, intent, hideFromRecents)
         }
     }
 
@@ -295,7 +307,7 @@ class HomeActionLauncher(private val context: Context) {
 
                 if (appToLaunch != null) {
                     try {
-                        DualScreenLauncher.launchOnTop(context, appToLaunch.launchIntent)
+                        DualScreenLauncher.launchOnTop(context, appToLaunch.launchIntent, hideFromRecents(isTop = true))
                         DiagnosticsLogger.logEvent("Launcher", "LAUNCH_SUCCESS", "slot=TOP package=$targetPkg", context)
                     } catch (e: Exception) {
                         DiagnosticsLogger.logEvent("Error", "LAUNCH_FAILED", "slot=TOP package=$targetPkg message=${e.message}", context)
@@ -338,7 +350,7 @@ class HomeActionLauncher(private val context: Context) {
 
                 if (appToLaunch != null) {
                     try {
-                        DualScreenLauncher.launchOnBottom(context, appToLaunch.launchIntent)
+                        DualScreenLauncher.launchOnBottom(context, appToLaunch.launchIntent, hideFromRecents(isTop = false))
                         DiagnosticsLogger.logEvent("Launcher", "LAUNCH_SUCCESS", "slot=BOTTOM package=$targetPkg", context)
                     } catch (e: Exception) {
                         DiagnosticsLogger.logEvent("Error", "LAUNCH_FAILED", "slot=BOTTOM package=$targetPkg message=${e.message}", context)
@@ -430,7 +442,8 @@ class HomeActionLauncher(private val context: Context) {
 
         if (appToLaunch != null) {
             try {
-                launchOnDisplay(focusTarget == FocusTarget.TOP, appToLaunch.launchIntent)
+                // The hide setting follows the app's slot, not the display it opens on.
+                launchOnDisplay(focusTarget == FocusTarget.TOP, appToLaunch.launchIntent, hideFromRecents(targetPkg == topAppPkg))
                 DiagnosticsLogger.logEvent(TAG, "FOCUS_TOP_APP_LAUNCH_SUCCESS", "target=$focusTarget package=$targetPkg", context)
             } catch (e: Exception) {
                 DiagnosticsLogger.logEvent(TAG, "FOCUS_TOP_APP_LAUNCH_FAILED", "target=$focusTarget package=$targetPkg error=${e.message}", context)
@@ -575,7 +588,7 @@ class HomeActionLauncher(private val context: Context) {
 
             if (appToLaunch != null) {
                 try {
-                    DualScreenLauncher.launchOnTop(context, appToLaunch.launchIntent)
+                    DualScreenLauncher.launchOnTop(context, appToLaunch.launchIntent, hideFromRecents(isTop = true))
                     DiagnosticsLogger.logEvent("Launcher", "LAUNCH_SUCCESS", "slot=TOP package=$targetPkg", context)
                 } catch (e: Exception) {
                     DiagnosticsLogger.logEvent("Error", "LAUNCH_FAILED", "slot=TOP package=$targetPkg message=${e.message}", context)
@@ -608,7 +621,7 @@ class HomeActionLauncher(private val context: Context) {
 
             if (appToLaunch != null) {
                 try {
-                    DualScreenLauncher.launchOnBottom(context, appToLaunch.launchIntent)
+                    DualScreenLauncher.launchOnBottom(context, appToLaunch.launchIntent, hideFromRecents(isTop = false))
                     DiagnosticsLogger.logEvent("Launcher", "LAUNCH_SUCCESS", "slot=BOTTOM package=$targetPkg", context)
                 } catch (e: Exception) {
                     DiagnosticsLogger.logEvent("Error", "LAUNCH_FAILED", "slot=BOTTOM package=$targetPkg message=${e.message}", context)
