@@ -100,6 +100,7 @@ import xyz.blacksheep.mjolnir.KEY_ACTIVE_GESTURE_CONFIG
 import xyz.blacksheep.mjolnir.KEY_THEME
 import xyz.blacksheep.mjolnir.model.AppTheme
 import xyz.blacksheep.mjolnir.home.Action
+import xyz.blacksheep.mjolnir.home.actionDescription
 import xyz.blacksheep.mjolnir.home.actionLabel
 import xyz.blacksheep.mjolnir.home.orderedActions
 import xyz.blacksheep.mjolnir.launchers.rememberDrawablePainter
@@ -472,9 +473,7 @@ fun AdvancedGestureScreen(navController: NavController, viewModel: OnboardingVie
                         showDeleteDialog = true
                     },
                     onNew = {
-                        val created = GestureConfigStore.createPresetFromActive(context)
-                        viewModel.setGesturePreset(created.fileName)
-                        presetRefreshTick++
+                        GestureConfigStore.createPresetFromActive(context)
                         onNavigate { navController.navigate("advanced_gesture_edit") }
                     },
                     enableContextMenu = true
@@ -773,7 +772,15 @@ fun GestureDropdown(currentAction: Action, isNavigating: Boolean, topApp: String
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             ActionIcon(action = action, topApp = topApp, bottomApp = bottomApp, size = 24.dp)
                             Spacer(Modifier.width(8.dp))
-                            Text(actionLabel(action, topLabel, bottomLabel))
+                            Column {
+                                Text(actionLabel(action, topLabel, bottomLabel))
+                                Text(
+                                    actionDescription(action),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.width(280.dp)
+                                )
+                            }
                         }
                     }, 
                     onClick = { onActionSelected(action); expanded = false }

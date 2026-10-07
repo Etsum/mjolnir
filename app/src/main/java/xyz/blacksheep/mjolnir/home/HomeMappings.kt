@@ -49,3 +49,20 @@ fun gestureLabel(gesture: Gesture): String {
         Gesture.LONG_HOME -> "Long-press Home"
     }
 }
+
+/**
+ * One-line help text for an [Action], shown in the gesture picker (docs/USER-GUIDE.md uses the same words).
+ */
+fun actionDescription(action: Action): String = when (action) {
+    Action.TOP_HOME -> "Opens your Top app on the top screen."
+    Action.BOTTOM_HOME -> "Opens your Bottom app on the bottom screen."
+    Action.BOTH_HOME -> "Opens your Top app on the top screen and your Bottom app on the bottom screen. The Main Screen gets the focus."
+    Action.FOCUS_AUTO -> "Opens the Top app or the Bottom app, for the screen that has the focus."
+    Action.TOP_HOME_DEFAULT -> "Opens your default home app on the top screen."
+    Action.BOTTOM_HOME_DEFAULT -> "Opens your default home app on the bottom screen."
+    Action.BOTH_HOME_DEFAULT -> "Sends the two screens to your default home app."
+    Action.DEFAULT_HOME -> "Does the normal Android Home action. On the AYN Thor, this can change the two screens."
+    Action.APP_SWITCH -> "Opens Recent Tasks."
+    Action.FOCUS_TOP_APP -> "Opens your Top app on the screen that has the focus."
+    Action.NONE -> "Does nothing."
+}
