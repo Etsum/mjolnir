@@ -11,3 +11,6 @@ local.properties
 /app/release
 /.google/
 /.googleold/
+keystore.properties
+*.jks
+*.keystore
