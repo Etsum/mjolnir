@@ -212,12 +212,40 @@ class HomeActionLauncher(private val context: Context) {
         return true
     }
 
-    private fun launchOnDisplay(isTop: Boolean, intent: Intent) {
-        if (isTop) {
+    private fun launchOnDisplay(isTop: Boolean, intent: Intent): Boolean {
+        return if (isTop) {
             DualScreenLauncher.launchOnTop(context, intent)
         } else {
             DualScreenLauncher.launchOnBottom(context, intent)
         }
+    }
+
+    /**
+     * Starts the default home app on ONE display, the same way "TOP/BOTTOM: <app>" does.
+     *
+     * GLOBAL_ACTION_HOME is system-wide: on the AYN Thor it sends BOTH screens home, which made
+     * "TOP: Home" / "BOTTOM: Home" behave like "BOTH: Home" (upstream issues #34, #35).
+     *
+     * Returns false (caller keeps the GLOBAL_ACTION_HOME path) when the default home is
+     * Mjolnir itself (recursion), Quickstep/Odin (system homes that cannot run on the
+     * secondary display), the system chooser (no default set), the app the other screen uses,
+     * or the launch fails.
+     */
+    private fun launchDefaultHomeDirect(isTop: Boolean): Boolean {
+        val slot = if (isTop) "TOP" else "BOTTOM"
+        val homeIntent = buildDefaultHomeIntent()
+        val pkg = homeIntent?.`package`
+        // Same app as the other slot: a second launch would pull it off that screen.
+        val otherSlotPkg = getCleanApp(if (isTop) KEY_BOTTOM_APP else KEY_TOP_APP)
+        if (homeIntent == null || pkg == "android" || pkg == context.packageName || pkg in SPECIAL_HOME_APPS || pkg == otherSlotPkg) {
+            DiagnosticsLogger.logEvent(TAG, "DEFAULT_HOME_${slot}_DIRECT_SKIPPED", "package=$pkg", context)
+            return false
+        }
+        // Prefer the app's launcher entry (the proven "BOTTOM: <app>" path), else its home entry (0.2.6 behavior).
+        val intent = pkg?.let { context.packageManager.getLaunchIntentForPackage(it) } ?: homeIntent
+        val launched = launchOnDisplay(isTop, intent)
+        DiagnosticsLogger.logEvent(TAG, "DEFAULT_HOME_${slot}_DIRECT", "package=$pkg launched=$launched", context)
+        return launched
     }
 
     private fun buildDefaultHomeIntent(): Intent? {
@@ -342,14 +370,16 @@ class HomeActionLauncher(private val context: Context) {
                     return@launch
                 }
 
+                // The app launched LAST gets input focus, so the Main Screen goes last
+                // (same order as HomeActivity / DualScreenLauncher.launchOnDualScreens; upstream #38).
                 if (mainScreen == MainScreen.TOP) {
-                    launchTopAwait()
-                    if (interLaunchDelayMs > 0) delay(interLaunchDelayMs)
                     launchBottomAwait()
+                    if (interLaunchDelayMs > 0) delay(interLaunchDelayMs)
+                    launchTopAwait()
                 } else {
-                    launchBottomAwait()
-                    if (interLaunchDelayMs > 0) delay(interLaunchDelayMs)
                     launchTopAwait()
+                    if (interLaunchDelayMs > 0) delay(interLaunchDelayMs)
+                    launchBottomAwait()
                 }
             } finally {
                 trace("BOTH_AUTO", traceId, "END")
@@ -416,6 +446,8 @@ class HomeActionLauncher(private val context: Context) {
         val slot = if (isTop) "TOP" else "BOTTOM"
         DiagnosticsLogger.logEvent(TAG, "DEFAULT_HOME_$slot", "displayId=$targetDisplayId", context)
 
+        if (launchDefaultHomeDirect(isTop)) return
+
         if (context is AccessibilityService) {
             DiagnosticsLogger.logEvent(TAG, "FOCUS_HACK_USED", "reason=TARGETED_HOME displayId=$targetDisplayId", context)
             FocusHackHelper.requestFocus(context, targetDisplayId) {
@@ -478,11 +510,13 @@ class HomeActionLauncher(private val context: Context) {
         launchDefaultHomeOnDisplayAwait(isTop)
     }
 
-    private suspend fun launchDefaultHomeOnDisplayAwait(isTop: Boolean) {
+    private suspend fun launchDefaultHomeOnDisplayAwait(isTop: Boolean, allowDirect: Boolean = true) {
         val (topDisplayId, bottomDisplayId) = resolveDisplayIds()
         val targetDisplayId = if (isTop) topDisplayId else bottomDisplayId
         val slot = if (isTop) "TOP" else "BOTTOM"
         DiagnosticsLogger.logEvent(TAG, "DEFAULT_HOME_${slot}_AWAIT", "displayId=$targetDisplayId", context)
+
+        if (allowDirect && launchDefaultHomeDirect(isTop)) return
 
         if (context is AccessibilityService) {
             val completed = withTimeoutOrNull(1000L) {
@@ -610,14 +644,16 @@ class HomeActionLauncher(private val context: Context) {
         val interLaunchDelayMs = getInterLaunchDelayMs()
         scope.launch {
             try {
+                // BOTH keeps the system Home path: one launcher cannot be started on both screens.
+                // Main Screen goes last so it keeps input focus.
                 if (mainScreen == MainScreen.TOP) {
-                    launchDefaultHomeOnDisplayAwait(isTop = true)
+                    launchDefaultHomeOnDisplayAwait(isTop = false, allowDirect = false)
                     if (interLaunchDelayMs > 0) delay(interLaunchDelayMs)
-                    launchDefaultHomeOnDisplayAwait(isTop = false)
+                    launchDefaultHomeOnDisplayAwait(isTop = true, allowDirect = false)
                 } else {
-                    launchDefaultHomeOnDisplayAwait(isTop = false)
+                    launchDefaultHomeOnDisplayAwait(isTop = true, allowDirect = false)
                     if (interLaunchDelayMs > 0) delay(interLaunchDelayMs)
-                    launchDefaultHomeOnDisplayAwait(isTop = true)
+                    launchDefaultHomeOnDisplayAwait(isTop = false, allowDirect = false)
                 }
             } finally {
                 trace("BOTH_HOME", traceId, "END")
