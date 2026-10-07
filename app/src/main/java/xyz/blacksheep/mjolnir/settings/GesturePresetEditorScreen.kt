@@ -1,6 +1,7 @@
 package xyz.blacksheep.mjolnir.settings
 
 import android.content.Intent
+import androidx.activity.compose.BackHandler
 import android.view.ViewConfiguration
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -46,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import xyz.blacksheep.mjolnir.home.Action
+import xyz.blacksheep.mjolnir.home.actionDescription
 import xyz.blacksheep.mjolnir.home.actionLabel
 import xyz.blacksheep.mjolnir.home.orderedActions
 import xyz.blacksheep.mjolnir.onboarding.ActionIcon
@@ -70,6 +72,9 @@ fun GesturePresetEditorScreen(
     val stepLongPress = 25
     val longPressSteps = (maxLongPress - minLongPress) / stepLongPress - 1
     val displayedLongPress = if (config.longPressDelayMs > 0) config.longPressDelayMs else systemLongPress
+
+    // System Back = Cancel, so an abandoned draft cannot leak into the next Edit.
+    BackHandler(onBack = onCancel)
 
     Scaffold(containerColor = Color.Transparent) { padding ->
         Box(
@@ -267,7 +272,15 @@ private fun GestureDropdown(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             ActionIcon(action = action, topApp = topAppPackage, bottomApp = bottomAppPackage, size = 20.dp)
                             Spacer(Modifier.width(8.dp))
-                            Text(actionLabel(action, topLabel, bottomLabel))
+                            Column {
+                                Text(actionLabel(action, topLabel, bottomLabel))
+                                Text(
+                                    actionDescription(action),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.width(280.dp)
+                                )
+                            }
                         }
                     }
                 )
