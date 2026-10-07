@@ -1,0 +1,10 @@
+# Mjolnir v0.2.7b
+
+## Fixes
+- TOP: Home and BOTTOM: Home now change one screen only.
+- The Main Screen gets the controller focus after BOTH actions.
+- New gesture presets keep their name. No more extra untitled-N.cfg files.
+
+## New
+- Each action in the gesture picker has a short description.
+- User Guide: https://github.com/Etsum/mjolnir/blob/main/docs/USER-GUIDE.md

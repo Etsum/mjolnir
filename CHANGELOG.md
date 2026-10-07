@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# Mjolnir v0.2.7b - Routing and Presets Fix (fork)
+
+## Fixes
+- **TOP: Home / BOTTOM: Home change one screen only** (upstream #34, #35). They used the system Home action, which sends both AYN Thor screens home. A normal default launcher now opens directly on the target screen. Mjolnir, Quickstep, Odin, "no default", and the other screen's app keep the old path. BOTH: Home is unchanged.
+- **Main Screen gets the focus again** (upstream #38). 0.2.7a opened the Main Screen app first, so the other app got the controller. BOTH: Auto and BOTH: Home now open it last, like 0.2.7.
+- **Gesture presets keep their name** and no longer create extra `untitled-N.cfg` files. New presets are drafts until Save. Cancel or Back writes nothing. Saving without a rename keeps the file name. Saving a built-in preset under a new name makes a named copy.
+
+## Improvements
+- One-line help text under each action in the gesture picker.
+- New [User Guide](docs/USER-GUIDE.md) (ASD-STE100) with screenshots and simulations. README and FAQ rewritten.
+- Unit tests (Robolectric) and reproducible doc screenshots (Roborazzi).
+
+## Install note
+This fork has a different APK signature. Uninstall the upstream app first.
+
+---
+
 # Mjolnir v0.2.7 - Dual-Screen Update
 
 ## Highlights

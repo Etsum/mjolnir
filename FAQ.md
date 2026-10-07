@@ -1,4 +1,6 @@
-# Mjolnir FAQ (0.2.7)
+# Mjolnir FAQ (0.2.7b)
+
+For step-by-step instructions, read the [User Guide](docs/USER-GUIDE.md).
 
 ## What is Mjolnir?
 Mjolnir is a dual‑screen home layer for Android handhelds. It sits on top of your default home launcher and lets you map different apps to different screens, then route Home button presses to exactly what you want.
@@ -20,15 +22,13 @@ Not necessarily. Mjolnir can act as your default home, *or* you can keep another
 ## What devices does it support?
 Any dual‑screen Android device may work, but compatibility varies by OEM quirks. Current testing is centered on AYN Thor.
 
-**Important**: As of 0.2.7, the RG‑DS is **not officially supported** and does **not** work in current testing. RG‑DS support is planned for 0.2.8.
+**Important**: The RG‑DS is **not supported** and does **not** work in current testing.
 
 ## What’s “Basic” vs “Advanced” mode?
 - **Basic**: Mjolnir just launches your selected top/bottom apps. No home button interception.
 - **Advanced**: Mjolnir intercepts Home button gestures and applies your preset behaviors.
 
 If you want gesture routing, use Advanced.
-
-> Note: 0.2.8 will remove the Basic/Advanced split.
 
 ## What is the “SafetyNet” screen?
 It’s a tiny fallback activity that lives at the bottom of each display’s stack. If a screen becomes “empty” due to a launcher crash or bad config, SafetyNet prevents a soft‑lock. You should never normally see it — unless something went wrong.
@@ -37,7 +37,16 @@ It’s a tiny fallback activity that lives at the bottom of each display’s sta
 Because it causes recursion and can soft‑lock the system. Mjolnir is permanently blacklisted from the app picker to prevent this.
 
 ## What’s the “Main Screen” setting?
-Right now it’s mostly a future hook. The idea is to define which screen should get focus when launching both apps at once. It’s not fully enforced yet, but will matter more later.
+The Main Screen gets the controller input (focus) after a BOTH action. Mjolnir opens the Main Screen app last, and the last app gets the focus. Example: set the top screen as Main Screen to give ES‑DE the controller when ES‑DE Companion is on the bottom. Refer to [User Guide 7](docs/USER-GUIDE.md#7-input-focus).
+
+## What does the Mjolnir icon mean in the gesture picker?
+The Mjolnir (hammer) icon is **BOTH: Auto**. It opens your Top app on the top screen and your Bottom app on the bottom screen. A house icon means the action uses your default home app. Refer to [User Guide 6.1](docs/USER-GUIDE.md#61-icons).
+
+## Must “Prevent press the Home button accidentally” be off on the AYN Thor?
+Yes. Open **Thor Settings > Controller Settings** and set it to OFF. When it is ON, the Thor can block Home presses in apps that are not launchers, and Mjolnir does not see them.
+
+## What is the difference between “TOP: Home” and “TOP: \<app\>”?
+“TOP: \<app\>” opens your Top app. “TOP: Home” opens your **default home app** (set in Android Settings) on the top screen. Refer to [User Guide 8](docs/USER-GUIDE.md#8-default-home-app).
 
 ## What are gesture presets?
 Presets are saved Home‑button behaviors. You pick one and it controls what single/double/triple/long‑press do. You can edit or copy presets.
@@ -46,7 +55,7 @@ Presets are saved Home‑button behaviors. You pick one and it controls what sin
 Yes — most screens can be navigated with d‑pad/analog + A/B, and in onboarding L/R for Back/Next when available. There are still some edge cases I’m ironing out.
 
 ## Why is the notification so important?
-It’s your quick access point. It shows status, lets you open settings, and provides control over core behaviors. More advanced profile switching will come in 0.2.8.
+It’s your quick access point. It shows status, lets you open settings, and provides control over core behaviors.
 
 ## How do I reset if I break my config?
 All settings are stored in `/Android/data/xyz.blacksheep.mjolnir/`. You can delete or edit:
