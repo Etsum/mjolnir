@@ -49,13 +49,13 @@ For the default home app rules and the focus rules, read [User Guide sections 7 
 
 ---
 
-## What is new in 0.2.7b
+## What is new in 0.3.0
 
-* **TOP: Home and BOTTOM: Home change one screen only** (upstream #34, #35). In 0.2.7a they sent the two screens home.
-* **Main Screen sets the focus again** (upstream #38). BOTH actions open the Main Screen app last, so it gets the controller input.
-* **Presets keep their names.** Mjolnir does not make extra `untitled-N.cfg` files.
-* **Help text** in the gesture picker for each action.
-* **New documentation** with screenshots and animations.
+* **No more "You should not be here." after a game closes** (upstream #31). SafetyNet opens the app of that screen again.
+* **Start on boot waits for the SD card** (upstream #29).
+* **Hide from Recents** switch for each app (upstream PR #40). Default OFF.
+
+0.2.7b: TOP: Home and BOTTOM: Home change one screen only, the Main Screen gets the focus again, and presets keep their names.
 
 Full list: [CHANGELOG.md](CHANGELOG.md).
 

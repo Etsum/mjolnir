@@ -1,9 +1,9 @@
-# Mjolnir User Guide (0.2.7b)
+# Mjolnir User Guide (0.3.0)
 
 This guide uses ASD-STE100 Simplified Technical English.
 The guide applies to the AYN Thor. Other dual-screen devices can operate differently.
 
-The screenshots come from the 0.2.7b app. The animations are simulations.
+The screenshots come from the 0.3.0 app. The animations are simulations.
 In the animations, a yellow frame shows the screen that has the input focus.
 
 ## Contents
@@ -70,7 +70,7 @@ Examples: ES-DE, Daijisho, Beacon, Cocoon, Nova Launcher, Smart Launcher.
 
 1. If you have custom presets, copy the folder `/Android/data/xyz.blacksheep.mjolnir/gestures/` to a safe location.
 2. Uninstall the old Mjolnir app.
-3. Download `Mjolnir-v0.2.7b.apk` from the Releases page.
+3. Download `Mjolnir-v0.3.0.apk` from the Releases page.
 4. Install the APK.
 5. Open Mjolnir.
 6. Follow the onboarding steps.
@@ -293,6 +293,7 @@ All settings are in **Settings > Home Launcher**.
 
 * ON (**BOTH: Auto**): after a restart, Mjolnir opens your Top app and your Bottom app.
 * OFF (**BOTH: Home**): after a restart, Mjolnir sends the two screens to the default home app.
+* If the SD card is not ready yet, Mjolnir waits for it (maximum 10 seconds). Then apps on the SD card start with their data. (Upstream issue #29.)
 
 ### 9.2 Empty slot behavior (Auto actions)
 
@@ -326,6 +327,15 @@ It needs the "Display over other apps" permission.
 
 Records logs in `/Android/data/xyz.blacksheep.mjolnir/logs/`. Use **View / Export Diagnostics** to share logs with a bug report.
 
+### 9.8 Hide from Recents
+
+Each app card has a **Hide from Recents** switch. The default is OFF.
+When the switch is ON, Mjolnir opens that app without an entry in Recent Tasks. Then Recent Tasks shows only your other apps (for example, the game and the browser).
+
+* Android always shows the app that is on the screen now. The entry goes away when you go to a different app.
+* The setting applies to the next time Mjolnir opens the app. If the app is in Recent Tasks now, remove it one time.
+* The setting applies to apps that Mjolnir opens. It does not apply to the default home app.
+
 ---
 
 ## 10. Example setups
@@ -354,7 +364,28 @@ Records logs in `/Android/data/xyz.blacksheep.mjolnir/logs/`. Use **View / Expor
 | Double | BOTTOM: ES-DE Companion |
 | Long | TOP: Recent Tasks |
 
-### 10.3 One screen only
+### 10.3 Quickstep for apps, ES-DE for games
+
+Use Quickstep (the AYN launcher) for other apps, for example a browser or an app store. Use ES-DE and ES-DE Companion for games.
+
+| Item | Value |
+|---|---|
+| Top app | ES-DE |
+| Bottom app | ES-DE Companion |
+| Default home app | Quickstep |
+| Main Screen | Top (ES-DE gets the controller) |
+| Start on boot | ON (BOTH: Auto) |
+| Hide from Recents | Optional: ON for the two apps |
+| Single | BOTH: Auto (go back to ES-DE and Companion) |
+| Double | TOP: Recent Tasks (go to the game or a different app) |
+| Long | TOP: Home (Quickstep on the top screen) |
+| Triple | BOTTOM: ES-DE Companion (optional, Companion only) |
+
+* Mjolnir cannot open Quickstep on one screen. Thus TOP: Home gives the focus to the top screen, then does the normal Android Home action. The result is the same as FOCUS: Home when the top screen has the focus. It is also correct when the bottom screen has the focus.
+* On the Thor, the normal Android Home action can also change the bottom screen. This depends on the Thor focus lock setting.
+* BOTTOM: ES-DE Companion gives the focus to the bottom screen. Touch the top screen to give the focus back to the game.
+
+### 10.4 One screen only
 
 | Item | Value |
 |---|---|
@@ -369,8 +400,14 @@ Records logs in `/Android/data/xyz.blacksheep.mjolnir/logs/`. Use **View / Expor
 
 ### 11.1 SafetyNet
 
-Mjolnir keeps a small, empty activity at the bottom of each screen. If an app closes and nothing is below it, you see this activity. It prevents a black screen that you cannot use.
-If you see the SafetyNet screen, push Home or open Mjolnir.
+Mjolnir keeps a small, empty activity at the bottom of the top screen and the bottom screen. It prevents a black screen that you cannot use.
+
+If an app closes and nothing is below it (for example, when you stop a game), Mjolnir opens the app of that screen again. (Upstream issue #31.)
+
+* If the app closes again in less than 5 seconds, Mjolnir does not open it again. You see the text "You should not be here." Push Home or open Mjolnir.
+* If the slot is `<Nothing>`, Quickstep, or Odin Launcher, Mjolnir does not open an app. Push Home.
+* Swap Screens and FOCUS: <Top app> move an app to the other screen. After these actions, Mjolnir does not open apps again for 5 seconds.
+* Mjolnir does not put SafetyNet on an external display (HDMI).
 
 ### 11.2 Configurations that Mjolnir prevents
 
@@ -410,4 +447,6 @@ If you see the SafetyNet screen, push Home or open Mjolnir.
 | A new preset loses its name. | Version 0.2.7a. | Install 0.2.7b. |
 | "Focus detection failed" message. | Mjolnir cannot find the screen with the focus. | Touch the screen. Push Home again. |
 | The controller stops on the top screen. | AYN Focus Lock bug. | Set **Fix Focus-Lock Top input bug** to ON. |
+| "You should not be here." after you stop a game. | Version 0.2.7 to 0.2.7b. | Install 0.3.0. Refer to [11.1](#111-safetynet). |
+| An app on the SD card starts with no data after a restart. | Mjolnir opened it before the SD card was ready. | Install 0.3.0. Refer to [9.1](#91-start-on-boot-advanced-only). |
 | Nothing happens when you push Home. | The Accessibility permission is off. | Open Android **Settings > Accessibility**. Set Mjolnir to ON. |

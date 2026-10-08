@@ -1,4 +1,4 @@
-# Mjolnir FAQ (0.2.7b)
+# Mjolnir FAQ (0.3.0)
 
 For step-by-step instructions, read the [User Guide](docs/USER-GUIDE.md).
 
@@ -31,7 +31,7 @@ Any dual‑screen Android device may work, but compatibility varies by OEM quirk
 If you want gesture routing, use Advanced.
 
 ## What is the “SafetyNet” screen?
-It’s a tiny fallback activity that lives at the bottom of each display’s stack. If a screen becomes “empty” due to a launcher crash or bad config, SafetyNet prevents a soft‑lock. You should never normally see it — unless something went wrong.
+It’s a tiny fallback activity that lives at the bottom of the top and bottom screens’ stacks. If a screen becomes “empty” (for example, a game closes with nothing under it), SafetyNet prevents a soft‑lock. Since 0.3.0 it reopens that screen’s app straight away, so you should only see it if the app closes again immediately or the slot is `<Nothing>`. Refer to [User Guide 11.1](docs/USER-GUIDE.md#111-safetynet).
 
 ## Why can’t I pick Mjolnir itself as a top/bottom app?
 Because it causes recursion and can soft‑lock the system. Mjolnir is permanently blacklisted from the app picker to prevent this.

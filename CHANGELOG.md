@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+# Mjolnir v0.3.0 - SafetyNet and Recents (fork)
+
+## Fixes
+- **No more "You should not be here." after a game closes** (upstream #31). When an app closes and nothing is below it, the SafetyNet now opens that screen's app again, as Home did before 0.2.7. If the app closes again in less than 5 seconds, SafetyNet stays, so there is no loop. Empty, Quickstep, and Odin slots are not opened. SafetyNet is not put on external (HDMI) displays.
+- **Start on boot waits for the SD card** (upstream #29). Apps on the SD card (for example ES-DE) no longer start with a fresh setup after a restart. Maximum wait: 10 seconds. Advanced mode only.
+
+## New
+- **Hide from Recents** (upstream #36, #39, PR #40 by alexboydray). One switch for each app card, in Settings and in onboarding. Default OFF. When ON, Mjolnir opens that app without a Recent Tasks entry. Also applies in Basic mode.
+
+## Install note
+Same signature as 0.2.7b. Install over it. If you come from upstream, uninstall the upstream app first.
+
+---
+
 # Mjolnir v0.2.7b - Routing and Presets Fix (fork)
 
 ## Fixes
