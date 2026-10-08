@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
+import android.net.Uri
 import android.graphics.drawable.ColorDrawable
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
@@ -14,11 +15,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowDisplayManager
 import xyz.blacksheep.mjolnir.KEY_BOTTOM_APP
+import xyz.blacksheep.mjolnir.SafetyNetActivity
 import xyz.blacksheep.mjolnir.KEY_HIDE_TOP_APP_FROM_RECENTS
 import xyz.blacksheep.mjolnir.KEY_MAIN_SCREEN
 import xyz.blacksheep.mjolnir.KEY_SHOW_ALL_APPS
@@ -26,7 +29,7 @@ import xyz.blacksheep.mjolnir.KEY_TOP_APP
 import xyz.blacksheep.mjolnir.KEY_TOP_BOTTOM_LAUNCH_DELAY_MS
 import xyz.blacksheep.mjolnir.settings.settingsPrefs
 
-/** Regressions for upstream #34/#35 (Home actions hit both screens), #38 (Main Screen focus) and #40 (Hide from Recents). */
+/** Regressions for upstream #34/#35 (Home actions hit both screens), #38 (Main Screen focus) and #40 (Hide from Recents), #31 (SafetyNet dead end). */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class HomeActionLauncherTest {
@@ -106,5 +109,36 @@ class HomeActionLauncherTest {
             (it.first.component?.packageName ?: it.first.`package`) to (it.first.flags and Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS != 0)
         }
         assertEquals(mapOf("es.top" to true, "comp.bottom" to false), hidden)
+    }
+
+    private fun pkgs() = started().map { it.first.component?.packageName ?: it.first.`package` }
+
+    @Test
+    fun reopenSlotAppSkipsEmptyAndSystemHomeSlots() {
+        HomeActionLauncher(app).reopenSlotApp(isTop = false)
+        assertEquals(listOf(bottomDisplayId), started().map { it.second })
+
+        app.settingsPrefs().edit().putString(KEY_BOTTOM_APP, "NOTHING").putString(KEY_TOP_APP, "com.android.launcher3").apply()
+        HomeActionLauncher(app).reopenSlotApp(isTop = false)
+        HomeActionLauncher(app).reopenSlotApp(isTop = true)
+        assertEquals(emptyList<String?>(), pkgs())
+    }
+
+    @Test
+    fun uncoveredSafetyNetReopensSlotAppOnceThenStays() {
+        fun safetyNet(displayId: Int) = Robolectric.buildActivity(SafetyNetActivity::class.java,
+            Intent(app, SafetyNetActivity::class.java).setData(Uri.parse("mjolnir://safetynet/$displayId"))).setup()
+
+        val bottom = safetyNet(bottomDisplayId)
+        started() // drop launches from setup
+        bottom.pause().stop().restart().start().resume()
+        assertEquals(listOf("comp.bottom"), pkgs())
+        bottom.pause().stop().restart().start().resume() // slot app closed again right away
+        assertEquals(emptyList<String?>(), pkgs())
+
+        val external = safetyNet(99)
+        external.pause().stop().restart()
+        assertTrue("SafetyNet on an external display closes itself", external.get().isFinishing)
+        assertEquals(emptyList<String?>(), pkgs())
     }
 }

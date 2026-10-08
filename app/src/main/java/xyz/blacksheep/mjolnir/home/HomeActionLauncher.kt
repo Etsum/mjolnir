@@ -277,6 +277,18 @@ class HomeActionLauncher(private val context: Context) {
     }
 
     /**
+     * Upstream #31: an app closed and uncovered the SafetyNet on one screen. Reopens that
+     * screen's slot app, as Home did before 0.2.7. Skips an empty slot and a system home slot,
+     * because their Home path can change both screens.
+     */
+    fun reopenSlotApp(isTop: Boolean) {
+        val pkg = getCleanApp(if (isTop) KEY_TOP_APP else KEY_BOTTOM_APP)
+        DiagnosticsLogger.logEvent(TAG, "SAFETY_NET_REOPEN", "slot=${if (isTop) "TOP" else "BOTTOM"} package=$pkg", context)
+        if (pkg == null || pkg in SPECIAL_HOME_APPS) return
+        if (isTop) launchTop() else launchBottom()
+    }
+
+    /**
      * Executes the logic for the "Top Home" action.
      *
      * @param isManualSequence If true, indicates this call is part of a [launchBoth] sequence involving

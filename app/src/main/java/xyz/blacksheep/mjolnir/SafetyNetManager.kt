@@ -36,11 +36,9 @@ object SafetyNetManager {
             return
         }
 
-        val displayManager = context.getSystemService(DisplayManager::class.java)
-        val displays = displayManager.displays
+        val displays = context.getSystemService(DisplayManager::class.java).displays
         val activityManager = context.getSystemService(ActivityManager::class.java)
-        val targetDisplayIds = mutableSetOf(Display.DEFAULT_DISPLAY)
-        displays.forEach { targetDisplayIds.add(it.displayId) }
+        val targetDisplayIds = builtInDisplayIds(context)
         val displaySummary = displays.joinToString { "${it.displayId}:${it.name}" }
         Log.d(TAG, "DisplayManager reports: [$displaySummary]; targetIds=$targetDisplayIds")
 
@@ -66,6 +64,13 @@ object SafetyNetManager {
 
         clearPending(context)
     }
+
+    /**
+     * The top and bottom screens (display 0 and the next display, as DualScreenLauncher uses).
+     * Upstream #31: an HDMI display has no Home button, so a SafetyNet there is a dead end.
+     */
+    fun builtInDisplayIds(context: Context): Set<Int> =
+        setOf(Display.DEFAULT_DISPLAY) + context.getSystemService(DisplayManager::class.java).displays.take(2).map { it.displayId }
 
     fun bringSafetyNetToFront(context: Context) {
         val displayManager = context.getSystemService(DisplayManager::class.java)
