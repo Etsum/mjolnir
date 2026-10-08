@@ -71,10 +71,11 @@ class HomeActivity : ComponentActivity() {
                  val targetPkg = topAppPkg ?: bottomAppPkg
                  val appToLaunch = launcherApps.find { it.packageName == targetPkg }
                  if (appToLaunch != null) {
+                     val hide = prefs.getBoolean(if (targetPkg == topAppPkg) KEY_HIDE_TOP_APP_FROM_RECENTS else KEY_HIDE_BOTTOM_APP_FROM_RECENTS, false)
                      if (mainScreen == MainScreen.TOP) {
-                         DualScreenLauncher.launchOnTop(this, appToLaunch.launchIntent)
+                         DualScreenLauncher.launchOnTop(this, appToLaunch.launchIntent, hide)
                      } else {
-                         DualScreenLauncher.launchOnBottom(this, appToLaunch.launchIntent)
+                         DualScreenLauncher.launchOnBottom(this, appToLaunch.launchIntent, hide)
                      }
                      prefs.edit { putInt(KEY_LAUNCH_FAILURE_COUNT, 0) }
                  } else {
@@ -86,7 +87,11 @@ class HomeActivity : ComponentActivity() {
                 val bottomApp = launcherApps.find { it.packageName == bottomAppPkg }
 
                 if (topApp != null && bottomApp != null) {
-                    val success = DualScreenLauncher.launchOnDualScreens(this, topApp.launchIntent, bottomApp.launchIntent, mainScreen)
+                    val success = DualScreenLauncher.launchOnDualScreens(
+                        this, topApp.launchIntent, bottomApp.launchIntent, mainScreen,
+                        hideTopFromRecents = prefs.getBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, false),
+                        hideBottomFromRecents = prefs.getBoolean(KEY_HIDE_BOTTOM_APP_FROM_RECENTS, false)
+                    )
                     if (success) {
                         prefs.edit { putInt(KEY_LAUNCH_FAILURE_COUNT, 0) }
                     } else {

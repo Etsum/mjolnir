@@ -19,13 +19,14 @@ import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowDisplayManager
 import xyz.blacksheep.mjolnir.KEY_BOTTOM_APP
+import xyz.blacksheep.mjolnir.KEY_HIDE_TOP_APP_FROM_RECENTS
 import xyz.blacksheep.mjolnir.KEY_MAIN_SCREEN
 import xyz.blacksheep.mjolnir.KEY_SHOW_ALL_APPS
 import xyz.blacksheep.mjolnir.KEY_TOP_APP
 import xyz.blacksheep.mjolnir.KEY_TOP_BOTTOM_LAUNCH_DELAY_MS
 import xyz.blacksheep.mjolnir.settings.settingsPrefs
 
-/** Regressions for upstream #34/#35 (Home actions hit both screens) and #38 (Main Screen focus). */
+/** Regressions for upstream #34/#35 (Home actions hit both screens), #38 (Main Screen focus) and #40 (Hide from Recents). */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
 class HomeActionLauncherTest {
@@ -95,5 +96,15 @@ class HomeActionLauncherTest {
         app.settingsPrefs().edit().putString(KEY_MAIN_SCREEN, "BOTTOM").apply()
         HomeActionLauncher(app).launchBoth()
         assertEquals(listOf("es.top", "comp.bottom"), started().map { it.first.component?.packageName ?: it.first.`package` })
+    }
+
+    @Test
+    fun hideFromRecentsAppliesOnlyToItsSlot() {
+        app.settingsPrefs().edit().putBoolean(KEY_HIDE_TOP_APP_FROM_RECENTS, true).apply()
+        HomeActionLauncher(app).launchBoth()
+        val hidden = started().associate {
+            (it.first.component?.packageName ?: it.first.`package`) to (it.first.flags and Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS != 0)
+        }
+        assertEquals(mapOf("es.top" to true, "comp.bottom" to false), hidden)
     }
 }
