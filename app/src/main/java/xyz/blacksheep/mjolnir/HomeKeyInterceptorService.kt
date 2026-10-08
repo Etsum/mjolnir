@@ -11,10 +11,12 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.hardware.display.DisplayManager
 import android.os.Build
+import android.os.Environment
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.os.VibrationEffect
+import android.os.storage.StorageManager
 import android.os.Vibrator
 import android.provider.Settings
 import android.view.KeyEvent
@@ -205,7 +207,25 @@ class HomeKeyInterceptorService : AccessibilityService(), SharedPreferences.OnSh
             }
         }, 250)
 
-        maybeRunBootAction()
+        runWhenStorageReady { maybeRunBootAction() }
+    }
+
+    /**
+     * Upstream #29: a slot app on the SD card starts with empty data if Mjolnir opens it
+     * before the card mounts. Waits up to 10 s for removable storage, then runs [action].
+     */
+    private fun runWhenStorageReady(attempt: Int = 0, action: () -> Unit) {
+        val waiting = runCatching {
+            getSystemService(StorageManager::class.java).storageVolumes.any {
+                it.isRemovable && it.state in setOf(Environment.MEDIA_CHECKING, Environment.MEDIA_UNMOUNTED)
+            }
+        }.getOrDefault(false)
+        if (waiting && attempt < 20) {
+            if (attempt == 0) DiagnosticsLogger.logEvent("Gesture", "AUTO_BOOT_WAIT_STORAGE", context = this)
+            Handler(Looper.getMainLooper()).postDelayed({ runWhenStorageReady(attempt + 1, action) }, 500)
+            return
+        }
+        action()
     }
 
     private fun maybeRunBootAction() {
