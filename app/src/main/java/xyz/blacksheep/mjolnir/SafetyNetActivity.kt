@@ -1,5 +1,6 @@
 package xyz.blacksheep.mjolnir
 
+import android.content.Context
 import android.os.Bundle
 import android.os.SystemClock
 import android.view.Display
@@ -23,7 +24,16 @@ class SafetyNetActivity : ComponentActivity() {
         private const val TAG = "SafetyNetActivity"
         /** If the slot app closes again within this time, stay here instead of a reopen loop. */
         private const val REOPEN_GUARD_MS = 5_000L
-        private val lastReopen = mutableMapOf<Int, Long>()
+        internal val lastReopen = mutableMapOf<Int, Long>()
+
+        /**
+         * Call before an action moves a slot app to the other screen (Swap, FOCUS: <Top app>).
+         * The move uncovers the SafetyNet, and a reopen would move the app straight back.
+         */
+        fun holdOffReopen(context: Context) {
+            val now = SystemClock.elapsedRealtime()
+            SafetyNetManager.builtInDisplayIds(context).forEach { lastReopen[it] = now }
+        }
     }
 
     private val displayId get() = intent?.data?.lastPathSegment?.toIntOrNull()

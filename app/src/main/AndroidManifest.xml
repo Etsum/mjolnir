@@ -80,7 +80,7 @@
             android:resizeableActivity="true"
             android:launchMode="standard"
             android:taskAffinity="xyz.blacksheep.mjolnir.safetynet"
-            android:configChanges="orientation|screenSize|keyboard|keyboardHidden" />
+            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|density|uiMode|keyboard|keyboardHidden" />
 
         <service
             android:name=".DebugSafetyNetTileService"

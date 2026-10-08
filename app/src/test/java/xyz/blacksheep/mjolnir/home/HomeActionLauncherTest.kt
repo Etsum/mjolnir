@@ -39,6 +39,7 @@ class HomeActionLauncherTest {
 
     @Before
     fun setUp() {
+        SafetyNetActivity.lastReopen.clear()
         bottomDisplayId = ShadowDisplayManager.addDisplay("w400dp-h350dp")
         pm.setApplicationIcon(app.packageName, ColorDrawable())
         // Slot apps are launcher-only (picked via "show all apps"), so the default home is unambiguous.
@@ -134,6 +135,11 @@ class HomeActionLauncherTest {
         bottom.pause().stop().restart().start().resume()
         assertEquals(listOf("comp.bottom"), pkgs())
         bottom.pause().stop().restart().start().resume() // slot app closed again right away
+        assertEquals(emptyList<String?>(), pkgs())
+
+        SafetyNetActivity.lastReopen.clear()
+        SafetyNetActivity.holdOffReopen(app) // Swap / FOCUS: <Top app> moved the slot app away
+        bottom.pause().stop().restart().start().resume()
         assertEquals(emptyList<String?>(), pkgs())
 
         val external = safetyNet(99)

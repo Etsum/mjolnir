@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withTimeoutOrNull
 import xyz.blacksheep.mjolnir.HomeKeyInterceptorService
+import xyz.blacksheep.mjolnir.SafetyNetActivity
 import xyz.blacksheep.mjolnir.DEFAULT_TOP_BOTTOM_LAUNCH_DELAY_MS
 import xyz.blacksheep.mjolnir.KEY_BOTTOM_APP
 import xyz.blacksheep.mjolnir.KEY_BOTH_AUTO_NOTHING_TO_HOME
@@ -431,6 +432,7 @@ class HomeActionLauncher(private val context: Context) {
     }
 
     fun launchFocusTopApp() {
+        SafetyNetActivity.holdOffReopen(context)
         val focusTarget = resolveFocusTarget()
         if (focusTarget == null) {
             DiagnosticsLogger.logEvent(TAG, "FOCUS_TOP_APP_ABORT", "reason=NoFocusTarget", context)

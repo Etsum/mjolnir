@@ -1,0 +1,9 @@
+# Mjolnir v0.3.0
+
+## Fixes
+- No more "You should not be here." after a game closes. Mjolnir opens the app of that screen again.
+- Start on boot waits for the SD card (maximum 10 seconds).
+
+## New
+- Hide from Recents: one switch for each app card. Default OFF.
+- User Guide: https://github.com/Etsum/mjolnir/blob/main/docs/USER-GUIDE.md

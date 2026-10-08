@@ -293,6 +293,7 @@ class HomeKeyInterceptorService : AccessibilityService(), SharedPreferences.OnSh
     }
 
     private fun performScreenSwap() {
+        SafetyNetActivity.holdOffReopen(this)
         // Collapse shade first so it doesn't get in the way
         performGlobalAction(AccessibilityService.GLOBAL_ACTION_DISMISS_NOTIFICATION_SHADE)
 
