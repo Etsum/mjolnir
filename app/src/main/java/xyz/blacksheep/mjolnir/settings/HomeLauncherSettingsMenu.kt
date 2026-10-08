@@ -74,6 +74,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import xyz.blacksheep.mjolnir.KEY_CUSTOM_DOUBLE_TAP_DELAY
 import xyz.blacksheep.mjolnir.DEFAULT_TOP_BOTTOM_LAUNCH_DELAY_MS
@@ -522,7 +523,9 @@ fun HomeLauncherSettingsMenu(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.constrainAs(labelTop) {
-                                linkTo(start = c3, end = c4)
+                                // Cards have a fixed width and can pass c3 on a narrow screen. The top card is the wider one.
+                                linkTo(start = cardTop.end, end = c4)
+                                width = Dimension.preferredWrapContent
                                 centerVerticallyTo(cardTop)
                             }
                         ) {
@@ -641,7 +644,9 @@ fun HomeLauncherSettingsMenu(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.constrainAs(labelBottom) {
-                                linkTo(start = c3, end = c4)
+                                // Cards have a fixed width and can pass c3 on a narrow screen. The top card is the wider one.
+                                linkTo(start = cardTop.end, end = c4)
+                                width = Dimension.preferredWrapContent
                                 centerVerticallyTo(cardBottom)
                             }
                         ) {
